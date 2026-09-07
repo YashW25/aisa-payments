@@ -146,7 +146,7 @@ export default function PaymentClient({ link }: { link: any }) {
 
   const platformFee = link.enablePlatformFee ? Number((link.amount * 0.02).toFixed(2)) : 0;
   const totalAmount = link.amount + platformFee;
-  const upiUrl = `upi://pay?pa=${link.upiId}&pn=Innovara%20Dynamics%20Pay&am=${totalAmount.toFixed(2)}&cu=INR&tn=${encodeURIComponent(link.title)}`;
+  const upiUrl = `upi://pay?pa=${encodeURIComponent(link.upiId)}&pn=${encodeURIComponent("Innovara Dynamics Pay")}&am=${totalAmount.toFixed(2)}&cu=INR&tn=${encodeURIComponent(link.title)}`;
   
   const today = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
 
@@ -224,9 +224,13 @@ export default function PaymentClient({ link }: { link: any }) {
               {isMobile ? (
                 <div className="text-center space-y-4 w-full">
                   <p className="text-gray-300 mb-6">Click the button below to open your UPI app securely.</p>
-                  <a href={upiUrl} className="block w-full py-4 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-bold rounded-xl shadow-lg transition-all text-lg text-center">
+                  <button 
+                    onClick={() => { window.location.href = upiUrl; }}
+                    type="button"
+                    className="block w-full py-4 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-bold rounded-xl shadow-lg transition-all text-lg text-center"
+                  >
                     Pay ₹{totalAmount} with UPI App
-                  </a>
+                  </button>
                 </div>
               ) : (
                 <div className="text-center space-y-4">
