@@ -1,0 +1,60 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Admin {
+  id               String    @id @default(uuid())
+  email            String    @unique
+  passwordHash     String
+  createdAt        DateTime  @default(now())
+  verifiedPayments Payment[]
+}
+
+model PaymentLink {
+  id          String    @id @default(uuid())
+  slug        String    @unique // e.g., "membership-2026"
+  title       String
+  description String?
+  amount      Decimal
+  upiId       String
+  isActive    Boolean   @default(true)
+  enablePlatformFee Boolean @default(false)
+  formFields  Json      // e.g., ["email", "prn", "phone", { custom: "T-Shirt Size" }]
+  createdAt   DateTime  @default(now())
+  payments    Payment[]
+}
+
+model Payment {
+  id               String        @id @default(uuid())
+  transactionId    String        @unique // AISA-YYYY-XXXX
+  linkId           String
+  link             PaymentLink   @relation(fields: [linkId], references: [id])
+  name             String
+  email            String
+  phone            String?
+  prn              String?
+  department       String?
+  year             String?
+  division         String?
+  customFields     Json?         // e.g., { "T-Shirt Size": "M" }
+  amount           Decimal
+  status           PaymentStatus @default(SUBMITTED)
+  screenshotFileId String?       // Google Drive File ID
+  submittedAt      DateTime      @default(now())
+  verifiedAt       DateTime?
+  verifiedById     String?
+  verifiedBy       Admin?        @relation(fields: [verifiedById], references: [id])
+  adminNotes       String?
+}
+
+enum PaymentStatus {
+  SUBMITTED
+  UNDER_REVIEW
+  VERIFIED
+  REJECTED
+}

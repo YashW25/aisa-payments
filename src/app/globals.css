@@ -1,0 +1,21 @@
+@import "tailwindcss";
+
+@theme {
+  --color-aisa-navy: #020713;
+  --color-aisa-blue: #00BFFF;
+  --color-aisa-gold: #F4C543;
+  --color-aisa-gold-dark: #D4A017;
+  --color-aisa-text: #F5F7FA;
+  --color-aisa-accent: #D2FF6F;
+}
+
+:root {
+  --background: #020713;
+  --foreground: #F5F7FA;
+}
+
+body {
+  background-color: var(--background);
+  color: var(--foreground);
+  font-family: Arial, Helvetica, sans-serif;
+}
