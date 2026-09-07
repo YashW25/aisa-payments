@@ -146,7 +146,13 @@ export default function PaymentClient({ link }: { link: any }) {
 
   const platformFee = link.enablePlatformFee ? Number((link.amount * 0.02).toFixed(2)) : 0;
   const totalAmount = link.amount + platformFee;
-  const upiUrl = `upi://pay?pa=${encodeURIComponent(link.upiId)}&pn=${encodeURIComponent("Innovara Dynamics Pay")}&am=${totalAmount.toFixed(2)}&cu=INR&tn=${encodeURIComponent(link.title)}`;
+  
+  const params = new URLSearchParams({
+    pa: link.upiId.trim(),
+    am: totalAmount.toFixed(2),
+    cu: 'INR',
+  });
+  const upiUrl = `upi://pay?${params.toString()}`;
   
   const today = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
 
