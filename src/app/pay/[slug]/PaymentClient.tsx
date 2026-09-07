@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { QRCodeSVG } from 'qrcode.react';
-import { Upload, CheckCircle, Download, ArrowLeft, ExternalLink } from 'lucide-react';
+import { Upload, CheckCircle, Download, ArrowLeft, ExternalLink, Monitor } from 'lucide-react';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
 
@@ -504,6 +504,30 @@ export default function PaymentClient({ link }: PaymentClientProps) {
       );
     }
   };
+
+  if (isMobile) {
+    return (
+      <div className="min-h-screen bg-[var(--color-aisa-navy)] text-[var(--color-aisa-text)] flex flex-col items-center justify-center p-6 text-center relative overflow-hidden">
+        <div className="absolute inset-0 z-0 opacity-10 pointer-events-none">
+          <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-[var(--color-aisa-blue)] rounded-full mix-blend-screen blur-[120px]" />
+          <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-[var(--color-aisa-gold)] rounded-full mix-blend-screen blur-[120px]" />
+        </div>
+        
+        <div className="z-10 bg-white/10 p-8 rounded-2xl border border-white/20 backdrop-blur-md max-w-md shadow-2xl">
+          <Monitor className="w-16 h-16 mx-auto mb-4 text-[var(--color-aisa-blue)]" />
+          <h2 className="text-2xl font-bold mb-3 text-white">Desktop Required</h2>
+          <p className="text-gray-300 leading-relaxed">
+            For security and verification purposes, this payment portal can only be accessed from a laptop or desktop computer.
+          </p>
+          <div className="mt-6 p-4 bg-black/30 rounded-xl border border-white/5">
+            <p className="text-[var(--color-aisa-gold)] font-semibold text-sm">
+              Please open this exact link on your computer to continue with the payment.
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-[var(--color-aisa-navy)] text-[var(--color-aisa-text)] flex flex-col items-center py-12 px-4 relative overflow-hidden">
