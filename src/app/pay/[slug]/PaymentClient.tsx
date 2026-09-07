@@ -8,6 +8,7 @@ import jsPDF from 'jspdf';
 
 export default function PaymentClient({ link }: { link: any }) {
   const [isMobile, setIsMobile] = useState(false);
+  const [isAndroid, setIsAndroid] = useState(false);
   const [formData, setFormData] = useState<Record<string, string>>({});
   const [file, setFile] = useState<File | null>(null);
   const [screenshotDataUrl, setScreenshotDataUrl] = useState<string | null>(null);
@@ -22,6 +23,9 @@ export default function PaymentClient({ link }: { link: any }) {
     const userAgent = navigator.userAgent || navigator.vendor || (window as any).opera;
     if (/android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini/i.test(userAgent.toLowerCase())) {
       setIsMobile(true);
+    }
+    if (/android/i.test(userAgent.toLowerCase())) {
+      setIsAndroid(true);
     }
   }, []);
 
@@ -156,6 +160,27 @@ export default function PaymentClient({ link }: { link: any }) {
   
   const today = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
 
+  const UPI_APPS = [
+    { name: 'PhonePe', color: 'bg-purple-600 hover:bg-purple-700', pkg: 'com.phonepe.app' },
+    { name: 'Google Pay', color: 'bg-blue-600 hover:bg-blue-700', pkg: 'com.google.android.apps.nbu.paisa.user' },
+    { name: 'Paytm', color: 'bg-sky-500 hover:bg-sky-600', pkg: 'net.one97.paytm' },
+    { name: 'BHIM', color: 'bg-emerald-600 hover:bg-emerald-700', pkg: 'in.org.npci.upiapp' },
+    { name: 'Navi', color: 'bg-green-600 hover:bg-green-700', pkg: 'com.naviapp' },
+    { name: 'MobiKwik', color: 'bg-orange-500 hover:bg-orange-600', pkg: 'com.mobikwik_new' },
+    { name: 'super.money', color: 'bg-gray-800 hover:bg-gray-900', pkg: 'com.supermoney' },
+  ];
+
+  const handleAppClick = (pkg: string | null) => {
+    if (pkg && isAndroid) {
+      // Create explicit Android Intent for the specific package
+      const intentUrl = `intent://pay?${params.toString()}#Intent;scheme=upi;package=${pkg};end;`;
+      window.location.href = intentUrl;
+    } else {
+      // Fallback to generic UPI chooser
+      window.location.href = upiUrl;
+    }
+  };
+
   return (
     <div className="min-h-screen bg-[var(--color-aisa-navy)] text-[var(--color-aisa-text)] flex flex-col items-center py-12 px-4 relative overflow-hidden">
       {/* Background Decor */}
@@ -227,26 +252,47 @@ export default function PaymentClient({ link }: { link: any }) {
 
           {step === 2 && (
             <div className="space-y-8 flex flex-col items-center">
-              {isMobile ? (
-                <div className="text-center space-y-4 w-full">
-                  <p className="text-gray-300 mb-6">Click the button below to open your UPI app securely.</p>
-                  <button 
-                    onClick={() => { window.location.href = upiUrl; }}
-                    type="button"
-                    className="block w-full py-4 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-bold rounded-xl shadow-lg transition-all text-lg text-center"
-                  >
-                    Pay ₹{totalAmount} with UPI App
-                  </button>
-                </div>
-              ) : (
-                <div className="text-center space-y-4">
-                  <p className="text-gray-300 mb-4">Open your UPI app and scan the QR code to complete payment.</p>
-                  <div className="bg-white p-4 rounded-2xl inline-block shadow-[0_0_40px_rgba(255,255,255,0.1)]">
-                    <QRCodeSVG value={upiUrl} size={200} />
+              {isMobile && (
+                <div className="w-full space-y-6">
+                  <div className="text-center">
+                    <h3 className="font-semibold text-lg mb-1">Choose your UPI app</h3>
+                    <p className="text-sm text-gray-400">Tap an app to pay directly</p>
                   </div>
-                  <p className="font-mono text-sm text-[var(--color-aisa-gold)] mt-2">{link.upiId}</p>
+                  
+                  {isAndroid && (
+                    <div className="grid grid-cols-2 gap-3">
+                      {UPI_APPS.map((app) => (
+                        <button
+                          key={app.name}
+                          onClick={() => handleAppClick(app.pkg)}
+                          type="button"
+                          className={`w-full py-3 px-2 ${app.color} text-white font-semibold rounded-xl shadow-md transition-transform hover:scale-[1.02] active:scale-95 text-sm`}
+                        >
+                          {app.name}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+
+                  <div className="pt-2 border-t border-white/10">
+                    <button 
+                      onClick={() => handleAppClick(null)}
+                      type="button"
+                      className="block w-full py-4 bg-white text-[var(--color-aisa-navy)] font-bold rounded-xl shadow-lg transition-transform hover:scale-[1.02] active:scale-95 text-lg text-center"
+                    >
+                      📱 Pay with any UPI app
+                    </button>
+                  </div>
                 </div>
               )}
+
+              <div className="w-full text-center space-y-4 pt-4 border-t border-white/10">
+                <p className="text-gray-300 font-medium">Scan QR Code to Pay</p>
+                <div className="bg-white p-4 rounded-2xl inline-block shadow-[0_0_40px_rgba(255,255,255,0.1)]">
+                  <QRCodeSVG value={upiUrl} size={200} />
+                </div>
+                <p className="font-mono text-sm text-[var(--color-aisa-gold)] mt-2">{link.upiId}</p>
+              </div>
 
               <div className="w-full h-px bg-white/10 my-8"></div>
 
