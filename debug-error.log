@@ -1,0 +1,29 @@
+PrismaClientKnownRequestError: 
+Invalid `prisma.refundRequest.update()` invocation:
+
+
+Foreign key constraint violated: `RefundRequest_processedById_fkey (index)`
+    at $n.handleRequestError (D:\Projects\Codes\Aisa Payments\node_modules\@prisma\client\runtime\library.js:121:7315)
+    at $n.handleAndLogRequestError (D:\Projects\Codes\Aisa Payments\node_modules\@prisma\client\runtime\library.js:121:6623)
+    at $n.request (D:\Projects\Codes\Aisa Payments\node_modules\@prisma\client\runtime\library.js:121:6307)
+    at async l (D:\Projects\Codes\Aisa Payments\node_modules\@prisma\client\runtime\library.js:130:9633)
+    at async POST (file:///D:/Projects/Codes/Aisa%20Payments/.next/dev/server/chunks/%5Broot-of-the-server%5D__14dnuge._.js?id=%5Bproject%5D/src/app/api/admin/refunds/%5Bid%5D/process/route.ts+%5Bapp-route%5D+(ecmascript):96:9)
+    at async AppRouteRouteModule.do (D:\Projects\Codes\Aisa Payments\node_modules\next\dist\compiled\next-server\app-route-turbo.runtime.dev.js:5:42793)
+    at async AppRouteRouteModule.handle (D:\Projects\Codes\Aisa Payments\node_modules\next\dist\compiled\next-server\app-route-turbo.runtime.dev.js:5:50547)
+    at async responseGenerator (D:\Projects\Codes\Aisa Payments\.next\dev\server\chunks\[root-of-the-server]__1hath1x._.js:5823:30)
+    at async AppRouteRouteModule.handleResponse (D:\Projects\Codes\Aisa Payments\node_modules\next\dist\compiled\next-server\app-route-turbo.runtime.dev.js:1:250435)
+    at async handleResponse (D:\Projects\Codes\Aisa Payments\.next\dev\server\chunks\[root-of-the-server]__1hath1x._.js:5895:32)
+    at async Module.handler (D:\Projects\Codes\Aisa Payments\.next\dev\server\chunks\[root-of-the-server]__1hath1x._.js:6015:9)
+    at async DevServer.renderToResponseWithComponentsImpl (D:\Projects\Codes\Aisa Payments\node_modules\next\dist\server\base-server.js:1537:9)
+    at async DevServer.renderPageComponent (D:\Projects\Codes\Aisa Payments\node_modules\next\dist\server\base-server.js:1589:24)
+    at async DevServer.renderToResponseImpl (D:\Projects\Codes\Aisa Payments\node_modules\next\dist\server\base-server.js:1639:32)
+    at async DevServer.pipeImpl (D:\Projects\Codes\Aisa Payments\node_modules\next\dist\server\base-server.js:1088:25)
+    at async NextNodeServer.handleCatchallRenderRequest (D:\Projects\Codes\Aisa Payments\node_modules\next\dist\server\next-server.js:338:17)
+    at async DevServer.handleRequestImpl (D:\Projects\Codes\Aisa Payments\node_modules\next\dist\server\base-server.js:979:17)
+    at async D:\Projects\Codes\Aisa Payments\node_modules\next\dist\server\dev\next-dev-server.js:426:20
+    at async Span.traceAsyncFn (D:\Projects\Codes\Aisa Payments\node_modules\next\dist\trace\trace.js:164:20)
+    at async DevServer.handleRequest (D:\Projects\Codes\Aisa Payments\node_modules\next\dist\server\dev\next-dev-server.js:422:24)
+    at async invokeRender (D:\Projects\Codes\Aisa Payments\node_modules\next\dist\server\lib\router-server.js:306:21)
+    at async handleRequest (D:\Projects\Codes\Aisa Payments\node_modules\next\dist\server\lib\router-server.js:508:24)
+    at async requestHandlerImpl (D:\Projects\Codes\Aisa Payments\node_modules\next\dist\server\lib\router-server.js:565:13)
+    at async Server.requestListener (D:\Projects\Codes\Aisa Payments\node_modules\next\dist\server\lib\start-server.js:225:13)

@@ -1,0 +1,36 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: aisa-payments-app
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      - UPLOAD_DIR=/app/data/uploads
+    volumes:
+      - ./data/uploads:/app/data/uploads
+      - ./data/receipts:/app/data/receipts
+    ports:
+      - "127.0.0.1:3000:3000"
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/api/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "5"
+    networks:
+      - aisa-network
+      - web-network
+
+networks:
+  aisa-network:
+    driver: bridge
+  web-network:
+    external: true

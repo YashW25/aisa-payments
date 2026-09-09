@@ -3,8 +3,9 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 model Admin {
@@ -13,6 +14,7 @@ model Admin {
   passwordHash     String
   createdAt        DateTime  @default(now())
   verifiedPayments Payment[]
+  processedRefunds RefundRequest[]
 }
 
 model PaymentLink {
@@ -37,6 +39,7 @@ model Payment {
   name             String
   email            String
   phone            String?
+  upiId            String?
   prn              String?
   department       String?
   year             String?
@@ -44,17 +47,44 @@ model Payment {
   customFields     Json?         // e.g., { "T-Shirt Size": "M" }
   amount           Decimal
   status           PaymentStatus @default(SUBMITTED)
-  screenshotFileId String?       // Google Drive File ID
+  screenshotFileId String?       // Local file name or ID
+  screenshotUrl    String?       // Full URL link to the screenshot
   submittedAt      DateTime      @default(now())
   verifiedAt       DateTime?
   verifiedById     String?
   verifiedBy       Admin?        @relation(fields: [verifiedById], references: [id])
   adminNotes       String?
+  refundRequest    RefundRequest?
 }
 
 enum PaymentStatus {
   SUBMITTED
   UNDER_REVIEW
   VERIFIED
+  REJECTED
+}
+
+model RefundRequest {
+  id                String       @id @default(uuid())
+  paymentId         String?      @unique
+  payment           Payment?     @relation(fields: [paymentId], references: [id])
+  transactionId     String?      @unique @default(cuid()) // Auto-generated ID for the refund itself
+  standaloneName    String?      // Used when payment is null
+  standaloneAmount  Decimal?     // Used when payment is null
+  reason            String
+  studentUpiId      String?
+  refundProofFileId String?
+  refundProofUrl    String?
+  status            RefundStatus @default(PENDING)
+  requestedAt       DateTime     @default(now())
+  processedAt       DateTime?
+  processedById     String?
+  processedBy       Admin?       @relation(fields: [processedById], references: [id])
+  adminNotes        String?
+}
+
+enum RefundStatus {
+  PENDING
+  APPROVED
   REJECTED
 }

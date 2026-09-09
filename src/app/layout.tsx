@@ -14,19 +14,21 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: {
-    default: "AISA Payments | Innovara Dynamics Pay",
+    default: "AISA Payments | Secure Payment Portal",
     template: "%s | AISA Payments",
   },
   description:
-    "AISA — AI & Data Science Students Association secure payment portal powered by Innovara Dynamics Pay. Pay your membership fees, event fees, and more.",
+    "AISA — AI & Data Science Students Association secure payment portal. Pay your membership fees, event fees, and more.",
+  keywords: ["AISA", "ISBM", "Payment Portal", "UPI", "Student Association", "AI & Data Science"],
+  authors: [{ name: "AISA Team" }],
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"),
   openGraph: {
     type: "website",
     locale: "en_IN",
     siteName: "AISA Payments",
-    title: "AISA Payments | Innovara Dynamics Pay",
+    title: "AISA Payments | Secure Payment Portal",
     description:
-      "AISA — AI & Data Science Students Association secure payment portal powered by Innovara Dynamics Pay.",
+      "AISA — AI & Data Science Students Association secure payment portal.",
     images: [
       {
         url: "/LOGO.jpeg",
@@ -38,9 +40,9 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "AISA Payments | Innovara Dynamics Pay",
+    title: "AISA Payments | Secure Payment Portal",
     description:
-      "AISA — AI & Data Science Students Association secure payment portal powered by Innovara Dynamics Pay.",
+      "AISA — AI & Data Science Students Association secure payment portal.",
     images: ["/LOGO.jpeg"],
   },
   icons: {

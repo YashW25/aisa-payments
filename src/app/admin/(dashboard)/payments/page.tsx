@@ -1,5 +1,6 @@
 import prisma from '@/lib/prisma';
 import { ExternalLink, CheckCircle, XCircle } from 'lucide-react';
+import PaymentActions from './PaymentActions';
 
 export const dynamic = 'force-dynamic';
 
@@ -51,21 +52,20 @@ export default async function AdminPayments() {
                   </td>
                   <td className="px-6 py-4 text-right space-x-2">
                     {payment.screenshotFileId && (
-                      <a href={payment.screenshotFileId} target="_blank" rel="noreferrer"
-                        className="inline-flex items-center px-3 py-1.5 bg-black/40 hover:bg-black/60 border border-white/10 rounded-lg text-xs transition-colors">
+                      <a
+                        href={
+                          payment.screenshotFileId.startsWith('http://') || payment.screenshotFileId.startsWith('https://')
+                            ? payment.screenshotFileId
+                            : `/api/admin/payments/${payment.id}/proof`
+                        }
+                        target="_blank"
+                        rel="noreferrer"
+                        className="inline-flex items-center px-3 py-1.5 bg-black/40 hover:bg-black/60 border border-white/10 rounded-lg text-xs transition-colors"
+                      >
                         <ExternalLink className="w-3 h-3 mr-1.5" /> Proof
                       </a>
                     )}
-                    {payment.status === 'SUBMITTED' && (
-                      <>
-                        <button className="inline-flex items-center px-3 py-1.5 bg-green-500/10 hover:bg-green-500/20 text-green-400 border border-green-500/20 rounded-lg text-xs transition-colors">
-                          <CheckCircle className="w-3 h-3 mr-1.5" /> Verify
-                        </button>
-                        <button className="inline-flex items-center px-3 py-1.5 bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/20 rounded-lg text-xs transition-colors">
-                          <XCircle className="w-3 h-3 mr-1.5" /> Reject
-                        </button>
-                      </>
-                    )}
+                    <PaymentActions paymentId={payment.id} currentStatus={payment.status} />
                   </td>
                 </tr>
               ))}

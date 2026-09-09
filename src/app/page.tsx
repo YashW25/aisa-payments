@@ -5,7 +5,7 @@ import type { Metadata } from 'next';
 export const metadata: Metadata = {
   title: 'AISA Payments — Secure Student Payment Portal',
   description:
-    'AISA — AI & Data Science Students Association. Pay your fees, event registrations, and more securely through Innovara Dynamics Pay. UPI-powered, instant verification.',
+    'AISA — AI & Data Science Students Association. Pay your fees, event registrations, and more securely through AISA Payment Portal. UPI-powered, instant verification.',
 };
 
 export default function Home() {
@@ -43,7 +43,7 @@ export default function Home() {
       <section className="relative z-10 flex flex-col items-center justify-center text-center px-4 py-28 md:py-36">
         <div className="inline-flex items-center space-x-2 px-4 py-2 bg-white/5 border border-white/10 rounded-full text-xs text-gray-400 mb-8">
           <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
-          <span>Secured by Innovara Dynamics Pay</span>
+          <span>Secured AISA Payment Portal</span>
         </div>
 
         <div className="mb-8 relative">
@@ -65,7 +65,7 @@ export default function Home() {
         <p className="text-lg md:text-xl text-gray-400 max-w-xl mb-3 leading-relaxed">
           AI &amp; Data Science Students Association — Secure Student Payment Portal
         </p>
-        <p className="text-sm text-gray-600 mb-10">Powered by Innovara Dynamics Pay</p>
+        <p className="text-sm text-gray-600 mb-10">AISA Official Payment Portal</p>
 
         <div className="flex flex-col sm:flex-row gap-4">
           <a
@@ -193,7 +193,7 @@ export default function Home() {
           <ul className="space-y-3 text-gray-400 text-sm leading-relaxed">
             <li className="flex gap-3"><span className="text-purple-400 mt-1 shrink-0">→</span><span>We collect the following information during payment: Name, Email, PRN/Student ID, Phone Number (if required), and payment proof screenshot.</span></li>
             <li className="flex gap-3"><span className="text-purple-400 mt-1 shrink-0">→</span><span>Collected data is used exclusively for verifying your payment, maintaining transaction records, and contacting you about your registration.</span></li>
-            <li className="flex gap-3"><span className="text-purple-400 mt-1 shrink-0">→</span><span>Payment screenshots are stored securely on <strong className="text-white">Cloudinary</strong> encrypted cloud servers and are accessible only to AISA administrators.</span></li>
+            <li className="flex gap-3"><span className="text-purple-400 mt-1 shrink-0">→</span><span>Payment screenshots are stored securely on persistent server storage and are accessible only to AISA administrators.</span></li>
             <li className="flex gap-3"><span className="text-purple-400 mt-1 shrink-0">→</span><span>We do <strong className="text-white">not</strong> sell, rent, or share your personal data with any third party for marketing or advertising purposes.</span></li>
             <li className="flex gap-3"><span className="text-purple-400 mt-1 shrink-0">→</span><span>Transaction data is retained for a minimum of 2 years for audit and dispute resolution purposes in compliance with applicable Indian law.</span></li>
             <li className="flex gap-3"><span className="text-purple-400 mt-1 shrink-0">→</span><span>We comply with the <strong className="text-white">Digital Personal Data Protection Act, 2023 (DPDPA)</strong> of India.</span></li>
@@ -246,13 +246,21 @@ export default function Home() {
             >
               Contact AISA Support
             </a>
-            <Link
-              href="/admin"
-              className="px-6 py-3 bg-white/5 hover:bg-white/10 border border-white/10 text-white font-semibold rounded-xl transition-all"
-            >
-              Admin Dashboard
-            </Link>
           </div>
+        </div>
+      </section>
+
+      {/* Admin Quick Link */}
+      <section className="relative z-10 px-4 py-16 text-center border-t border-white/5">
+        <div className="max-w-md mx-auto p-8 rounded-2xl bg-gradient-to-b from-white/5 to-transparent border border-white/10">
+          <h3 className="text-xl font-bold mb-2">Administrator Access</h3>
+          <p className="text-gray-400 text-sm mb-6">Create payment links, verify submitted transactions, and export reports.</p>
+          <Link
+            href="/admin"
+            className="px-6 py-3 bg-white/5 hover:bg-white/10 border border-white/10 text-white font-semibold rounded-xl transition-all"
+          >
+            Admin Dashboard
+          </Link>
         </div>
       </section>
 
@@ -269,8 +277,7 @@ export default function Home() {
           <div className="text-center">
             <p className="text-xs text-gray-600">
               Secured &amp; Powered by{' '}
-              <Image src="/innovara-logo.png" alt="Innovara" width={14} height={14} className="inline rounded-sm mr-1" />
-              <span className="text-[#00BFFF] font-medium">Innovara Dynamics Pay</span>
+              <span className="text-[#00BFFF] font-medium">AISA Payment Portal</span>
             </p>
           </div>
           <div className="text-xs text-gray-600 text-center md:text-right">

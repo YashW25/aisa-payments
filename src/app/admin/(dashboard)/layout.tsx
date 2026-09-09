@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { LayoutDashboard, Link as LinkIcon, LogOut, Receipt } from 'lucide-react';
+import { LayoutDashboard, Link as LinkIcon, LogOut, Receipt, ClipboardList } from 'lucide-react';
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -20,6 +20,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     { href: '/admin', label: 'Dashboard', icon: LayoutDashboard },
     { href: '/admin/links', label: 'Payment Links', icon: LinkIcon },
     { href: '/admin/payments', label: 'Payments', icon: Receipt },
+    { href: '/admin/responses', label: 'Responses', icon: ClipboardList },
+    { href: '/admin/refunds', label: 'Refunds', icon: ClipboardList },
   ];
 
   return (

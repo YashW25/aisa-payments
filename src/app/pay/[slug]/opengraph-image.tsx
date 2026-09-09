@@ -98,7 +98,7 @@ export default async function Image({ params }: { params: Promise<{ slug: string
                 AISA Payments
               </span>
               <span style={{ fontSize: '13px', color: 'rgba(255,255,255,0.4)' }}>
-                Powered by Innovara Dynamics Pay
+                Powered by AISA Payment Portal
               </span>
             </div>
           </div>

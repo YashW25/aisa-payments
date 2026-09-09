@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { QRCodeSVG } from 'qrcode.react';
-import { Upload, CheckCircle, Download, ArrowLeft, ExternalLink, Monitor } from 'lucide-react';
+import { Upload, CheckCircle, Download, ArrowLeft } from 'lucide-react';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
 
@@ -30,16 +30,7 @@ type PaymentClientProps = {
   link: PaymentLink;
 };
 
-type UpiApp = {
-  name: string;
-  color: string;
-  pkg: string;
-};
-
-function generateTransactionRef() {
-  const randomPart = Math.random().toString(36).slice(2, 8).toUpperCase();
-  return `AISA-${Date.now()}-${randomPart}`;
-}
+// Removed generateTransactionRef
 
 function formatINR(value: number) {
   return new Intl.NumberFormat('en-IN', {
@@ -51,8 +42,6 @@ function formatINR(value: number) {
 }
 
 export default function PaymentClient({ link }: PaymentClientProps) {
-  const [isMobile, setIsMobile] = useState(false);
-  const [isAndroid, setIsAndroid] = useState(false);
   const [formData, setFormData] = useState<Record<string, string>>({});
   const [file, setFile] = useState<File | null>(null);
   const [screenshotDataUrl, setScreenshotDataUrl] = useState<string | null>(null);
@@ -60,7 +49,6 @@ export default function PaymentClient({ link }: PaymentClientProps) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [transactionId, setTransactionId] = useState('');
-  const [transactionRef, setTransactionRef] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
   const receiptRef = useRef<HTMLDivElement>(null);
@@ -86,15 +74,6 @@ export default function PaymentClient({ link }: PaymentClientProps) {
   );
 
   useEffect(() => {
-    const userAgent = navigator.userAgent || '';
-    const lower = userAgent.toLowerCase();
-
-    setIsMobile(
-      /android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini/i.test(lower)
-    );
-    setIsAndroid(/android/i.test(lower));
-
-    setTransactionRef(generateTransactionRef());
     setFormData({});
     setFile(null);
     setScreenshotDataUrl(null);
@@ -106,28 +85,20 @@ export default function PaymentClient({ link }: PaymentClientProps) {
   const upiUrl = useMemo(() => {
     const upiId = String(link?.upiId || '').trim();
 
-    if (!upiId || totalAmount <= 0 || !transactionRef) {
+    if (!upiId || totalAmount <= 0) {
       return '';
     }
 
-    /*
-     * IMPORTANT:
-     * Do NOT add mc or url here.
-     *
-     * The QR and generic UPI launcher intentionally use the same
-     * canonical UPI payment URI.
-     */
     const params = new URLSearchParams({
       pa: upiId,
       pn: String(link?.payeeName || 'AISA Club').trim(),
-      tr: transactionRef,
       tn: String(link?.title || 'AISA Payment').trim(),
       am: totalAmount.toFixed(2),
       cu: 'INR',
     });
 
     return `upi://pay?${params.toString()}`;
-  }, [link?.upiId, link?.payeeName, link?.title, totalAmount, transactionRef]);
+  }, [link?.upiId, link?.payeeName, link?.title, totalAmount]);
 
   const today = useMemo(
     () =>
@@ -157,8 +128,13 @@ export default function PaymentClient({ link }: PaymentClientProps) {
       return;
     }
 
-    if (!transactionRef) {
-      setError('Preparing your payment reference. Please try again.');
+    if (!formData.phone?.trim()) {
+      setError('Mobile Number is required.');
+      return;
+    }
+
+    if (!formData.upiId?.trim()) {
+      setError('UPI ID is required.');
       return;
     }
 
@@ -228,8 +204,8 @@ export default function PaymentClient({ link }: PaymentClientProps) {
       return;
     }
 
-    if (!transactionRef) {
-      setError('Missing payment reference. Please go back and try again.');
+    if (!file) {
+      setError('Please upload a payment screenshot.');
       return;
     }
 
@@ -242,7 +218,6 @@ export default function PaymentClient({ link }: PaymentClientProps) {
       formDataToSend.append('linkId', String(link.id));
       formDataToSend.append('screenshot', file);
       formDataToSend.append('formData', JSON.stringify(formData));
-      formDataToSend.append('transactionRef', transactionRef);
       formDataToSend.append('amount', totalAmount.toFixed(2));
       formDataToSend.append('upiId', String(link.upiId || '').trim());
 
@@ -272,7 +247,7 @@ export default function PaymentClient({ link }: PaymentClientProps) {
       const returnedTransactionId =
         typeof data.transactionId === 'string' ? data.transactionId : '';
 
-      setTransactionId(returnedTransactionId || transactionRef);
+      setTransactionId(returnedTransactionId);
       setStep(3);
     } catch (submitError) {
       console.error('Payment submission failed:', submitError);
@@ -286,75 +261,6 @@ export default function PaymentClient({ link }: PaymentClientProps) {
       setSubmitting(false);
     }
   };
-
-  const openGenericUPI = () => {
-    if (!upiUrl) {
-      setError('Unable to create the UPI payment request.');
-      return;
-    }
-
-    window.location.href = upiUrl;
-  };
-
-  const openUPIApp = (pkg: string) => {
-    if (!upiUrl) {
-      setError('Unable to create the UPI payment request.');
-      return;
-    }
-
-    /*
-     * This is a browser-level Android intent handoff.
-     * The app decides how to handle the payment request after launch.
-     */
-    if (isAndroid) {
-      const intentUrl =
-        `intent://pay?${upiUrl.split('?')[1]}` +
-        `#Intent;scheme=upi;package=${pkg};end;`;
-
-      window.location.href = intentUrl;
-      return;
-    }
-
-    openGenericUPI();
-  };
-
-  const UPI_APPS: UpiApp[] = [
-    {
-      name: 'PhonePe',
-      color: 'bg-purple-600 hover:bg-purple-700',
-      pkg: 'com.phonepe.app',
-    },
-    {
-      name: 'Google Pay',
-      color: 'bg-blue-600 hover:bg-blue-700',
-      pkg: 'com.google.android.apps.nbu.paisa.user',
-    },
-    {
-      name: 'Paytm',
-      color: 'bg-sky-500 hover:bg-sky-600',
-      pkg: 'net.one97.paytm',
-    },
-    {
-      name: 'BHIM',
-      color: 'bg-emerald-600 hover:bg-emerald-700',
-      pkg: 'in.org.npci.upiapp',
-    },
-    {
-      name: 'Navi',
-      color: 'bg-green-600 hover:bg-green-700',
-      pkg: 'com.naviapp',
-    },
-    {
-      name: 'MobiKwik',
-      color: 'bg-orange-500 hover:bg-orange-600',
-      pkg: 'com.mobikwik_new',
-    },
-    {
-      name: 'super.money',
-      color: 'bg-gray-800 hover:bg-gray-900',
-      pkg: 'com.supermoney',
-    },
-  ];
 
   const handleDownloadReceipt = async () => {
     if (!receiptRef.current) {
@@ -379,121 +285,40 @@ export default function PaymentClient({ link }: PaymentClientProps) {
         logging: false,
       });
 
-      const dataUrl = canvas.toDataURL('image/png');
-
+      const imgData = canvas.toDataURL('image/png');
       const pdf = new jsPDF({
         orientation: 'portrait',
-        unit: 'mm',
-        format: 'a4',
-        compress: true,
+        unit: 'px',
+        format: [canvas.width, canvas.height],
       });
 
-      const pageWidth = pdf.internal.pageSize.getWidth();
-      const pageHeight = pdf.internal.pageSize.getHeight();
+      pdf.addImage(imgData, 'PNG', 0, 0, canvas.width, canvas.height);
 
-      const imageWidth = pageWidth;
-      const imageHeight = (canvas.height * imageWidth) / canvas.width;
-
-      if (imageHeight <= pageHeight) {
-        pdf.addImage(dataUrl, 'PNG', 0, 0, imageWidth, imageHeight);
-      } else {
-        let remainingHeight = imageHeight;
-        let sourceY = 0;
-
-        while (remainingHeight > 0) {
-          const currentHeight = Math.min(pageHeight, remainingHeight);
-          const sourceHeight = (currentHeight / imageHeight) * canvas.height;
-
-          const pageCanvas = document.createElement('canvas');
-          pageCanvas.width = canvas.width;
-          pageCanvas.height = Math.ceil(sourceHeight);
-
-          const pageContext = pageCanvas.getContext('2d');
-          if (!pageContext) {
-            throw new Error('Unable to prepare receipt page.');
-          }
-
-          pageContext.fillStyle = '#ffffff';
-          pageContext.fillRect(0, 0, pageCanvas.width, pageCanvas.height);
-
-          pageContext.drawImage(
-            canvas,
-            0,
-            sourceY,
-            canvas.width,
-            sourceHeight,
-            0,
-            0,
-            pageCanvas.width,
-            pageCanvas.height
-          );
-
-          const pageImage = pageCanvas.toDataURL('image/png');
-
-          if (sourceY > 0) {
-            pdf.addPage();
-          }
-
-          pdf.addImage(
-            pageImage,
-            'PNG',
-            0,
-            0,
-            imageWidth,
-            currentHeight
-          );
-
-          sourceY += sourceHeight;
-          remainingHeight -= currentHeight;
-        }
-      }
+      const screenshotWidth = canvas.width;
+      const screenshotHeight = canvas.height;
 
       if (screenshotDataUrl) {
-        const screenshot = new Image();
-        screenshot.src = screenshotDataUrl;
+        const userImg = new Image();
+        userImg.src = screenshotDataUrl;
 
         await new Promise<void>((resolve, reject) => {
-          screenshot.onload = () => resolve();
-          screenshot.onerror = () =>
-            reject(new Error('Unable to load payment screenshot.'));
+          userImg.onload = () => resolve();
+          userImg.onerror = (err) => reject(err);
         });
 
-        pdf.addPage();
-
-        pdf.setFontSize(16);
-        pdf.setTextColor(30, 30, 30);
-        pdf.text('Payment Screenshot', 15, 18);
-
-        const margin = 15;
-        const titleSpace = 12;
-        const availableWidth = pageWidth - margin * 2;
-        const availableHeight = pageHeight - margin * 2 - titleSpace;
-
-        const ratio = screenshot.width / screenshot.height;
-
-        let screenshotWidth = availableWidth;
-        let screenshotHeight = screenshotWidth / ratio;
-
-        if (screenshotHeight > availableHeight) {
-          screenshotHeight = availableHeight;
-          screenshotWidth = screenshotHeight * ratio;
-        }
-
-        const x = (pageWidth - screenshotWidth) / 2;
-        const y = margin + titleSpace + (availableHeight - screenshotHeight) / 2;
-
+        pdf.addPage([screenshotWidth, screenshotHeight], 'portrait');
         pdf.addImage(
           screenshotDataUrl,
           'JPEG',
-          x,
-          y,
+          0,
+          0,
           screenshotWidth,
           screenshotHeight
         );
       }
 
       pdf.save(
-        `AISA-Receipt-${transactionId || transactionRef || 'payment'}.pdf`
+        `AISA-Receipt-${transactionId || 'payment'}.pdf`
       );
     } catch (receiptError) {
       console.error('Failed to generate receipt:', receiptError);
@@ -504,30 +329,6 @@ export default function PaymentClient({ link }: PaymentClientProps) {
       );
     }
   };
-
-  if (isMobile) {
-    return (
-      <div className="min-h-screen bg-[var(--color-aisa-navy)] text-[var(--color-aisa-text)] flex flex-col items-center justify-center p-6 text-center relative overflow-hidden">
-        <div className="absolute inset-0 z-0 opacity-10 pointer-events-none">
-          <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-[var(--color-aisa-blue)] rounded-full mix-blend-screen blur-[120px]" />
-          <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-[var(--color-aisa-gold)] rounded-full mix-blend-screen blur-[120px]" />
-        </div>
-        
-        <div className="z-10 bg-white/10 p-8 rounded-2xl border border-white/20 backdrop-blur-md max-w-md shadow-2xl">
-          <Monitor className="w-16 h-16 mx-auto mb-4 text-[var(--color-aisa-blue)]" />
-          <h2 className="text-2xl font-bold mb-3 text-white">Desktop Required</h2>
-          <p className="text-gray-300 leading-relaxed">
-            For security and verification purposes, this payment portal can only be accessed from a laptop or desktop computer.
-          </p>
-          <div className="mt-6 p-4 bg-black/30 rounded-xl border border-white/5">
-            <p className="text-[var(--color-aisa-gold)] font-semibold text-sm">
-              Please open this exact link on your computer to continue with the payment.
-            </p>
-          </div>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen bg-[var(--color-aisa-navy)] text-[var(--color-aisa-text)] flex flex-col items-center py-12 px-4 relative overflow-hidden">
@@ -575,8 +376,39 @@ export default function PaymentClient({ link }: PaymentClientProps) {
 
           {step === 1 && (
             <form onSubmit={handleProceedToPay} className="space-y-5">
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-1">
+                  Mobile Number *
+                </label>
+                <input
+                  type="tel"
+                  required
+                  value={formData.phone || ''}
+                  onChange={(event) => handleInputChange('phone', event.target.value)}
+                  placeholder="Enter mobile number"
+                  className="w-full px-4 py-3 rounded-lg bg-black/30 border border-white/10 focus:border-[var(--color-aisa-blue)] outline-none"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-1">
+                  UPI ID *
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={formData.upiId || ''}
+                  onChange={(event) => handleInputChange('upiId', event.target.value)}
+                  placeholder="Enter UPI ID (e.g. username@bank)"
+                  className="w-full px-4 py-3 rounded-lg bg-black/30 border border-white/10 focus:border-[var(--color-aisa-blue)] outline-none"
+                />
+              </div>
+
               {formFields.map((field, index) => {
                 const fieldName = field?.name || `field_${index}`;
+                if (fieldName === 'phone' || fieldName === 'upiId') {
+                  return null;
+                }
                 const fieldLabel = field?.label || fieldName;
 
                 if (field.type === 'select') {
@@ -665,47 +497,7 @@ export default function PaymentClient({ link }: PaymentClientProps) {
                 </button>
               </div>
 
-              {isMobile && (
-                <div className="w-full space-y-6">
-                  <div className="text-center">
-                    <h3 className="font-semibold text-lg mb-1">
-                      Choose your UPI app
-                    </h3>
-                    <p className="text-sm text-gray-400">
-                      Pay using your preferred UPI app
-                    </p>
-                  </div>
-
-                  {isAndroid && (
-                    <div className="grid grid-cols-2 gap-3">
-                      {UPI_APPS.map((app) => (
-                        <button
-                          key={app.name}
-                          type="button"
-                          onClick={() => openUPIApp(app.pkg)}
-                          className={`w-full py-3 px-2 ${app.color} text-white font-semibold rounded-xl shadow-md transition-transform hover:scale-[1.02] active:scale-95 text-sm`}
-                        >
-                          {app.name}
-                        </button>
-                      ))}
-                    </div>
-                  )}
-
-                  <div className="pt-2 border-t border-white/10">
-                    <button
-                      type="button"
-                      onClick={openGenericUPI}
-                      className="flex items-center justify-center gap-2 w-full py-4 bg-white text-[var(--color-aisa-navy)] font-bold rounded-xl shadow-lg transition-transform hover:scale-[1.02] active:scale-95 text-lg"
-                    >
-                      <span>📱</span>
-                      <span>Pay with any UPI app</span>
-                      <ExternalLink className="w-5 h-5" />
-                    </button>
-                  </div>
-                </div>
-              )}
-
-              <div className="w-full text-center space-y-4 pt-4 border-t border-white/10">
+              <div className="w-full text-center space-y-4">
                 <div>
                   <p className="text-gray-300 font-medium">Scan QR Code to Pay</p>
                   <p className="text-xs text-gray-500 mt-1">
@@ -732,11 +524,7 @@ export default function PaymentClient({ link }: PaymentClientProps) {
                   {link?.upiId}
                 </p>
 
-                {transactionRef && (
-                  <p className="text-xs text-gray-500 break-all">
-                    Payment reference: {transactionRef}
-                  </p>
-                )}
+                {/* Transaction Ref removed from step 2 display */}
               </div>
 
               <div className="w-full h-px bg-white/10" />
@@ -961,7 +749,7 @@ export default function PaymentClient({ link }: PaymentClientProps) {
                   fontWeight: 'bold',
                 }}
               >
-                Receipt for {transactionId || transactionRef}
+                Receipt for {transactionId}
               </div>
 
               <div
