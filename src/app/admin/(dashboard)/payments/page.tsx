@@ -1,14 +1,26 @@
 import prisma from '@/lib/prisma';
 import { ExternalLink, CheckCircle, XCircle } from 'lucide-react';
 import PaymentActions from './PaymentActions';
+import FormSelector from '../FormSelector';
 
 export const dynamic = 'force-dynamic';
 
-export default async function AdminPayments() {
-  const payments = await prisma.payment.findMany({
-    orderBy: { submittedAt: 'desc' },
-    include: { link: true }
+export default async function AdminPayments(props: { searchParams: Promise<{ linkId?: string }> }) {
+  const searchParams = await props.searchParams;
+  const linkId = searchParams.linkId;
+
+  const links = await prisma.paymentLink.findMany({
+    select: { id: true, title: true },
+    orderBy: { createdAt: 'desc' }
   });
+
+  const payments = linkId 
+    ? await prisma.payment.findMany({
+        where: { linkId },
+        orderBy: { submittedAt: 'desc' },
+        include: { link: true }
+      })
+    : [];
 
   return (
     <div className="space-y-6 text-[var(--color-aisa-text)]">
@@ -17,6 +29,13 @@ export default async function AdminPayments() {
         <p className="text-sm text-gray-400">Review and approve submitted payments</p>
       </div>
 
+      <FormSelector links={links} />
+
+      {!linkId ? (
+        <div className="bg-black/20 border border-white/10 rounded-xl p-12 text-center text-gray-400">
+          <p>Please select a form to view its payments.</p>
+        </div>
+      ) : (
       <div className="bg-black/20 border border-white/10 rounded-xl overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-sm">
@@ -81,6 +100,7 @@ export default async function AdminPayments() {
           </table>
         </div>
       </div>
+      )}
     </div>
   );
 }

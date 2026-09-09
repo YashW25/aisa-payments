@@ -3,14 +3,26 @@ import { ExternalLink } from 'lucide-react';
 import Link from 'next/link';
 import DownloadPDFButton from './DownloadPDFButton';
 import DownloadCSVButton from './DownloadCSVButton';
+import FormSelector from '../FormSelector';
 
 export const dynamic = 'force-dynamic';
 
-export default async function ResponsesPage() {
-  const rawPayments = await prisma.payment.findMany({
-    orderBy: { submittedAt: 'desc' },
-    include: { link: true }
+export default async function ResponsesPage(props: { searchParams: Promise<{ linkId?: string }> }) {
+  const searchParams = await props.searchParams;
+  const linkId = searchParams.linkId;
+
+  const links = await prisma.paymentLink.findMany({
+    select: { id: true, title: true },
+    orderBy: { createdAt: 'desc' }
   });
+
+  const rawPayments = linkId 
+    ? await prisma.payment.findMany({
+        where: { linkId },
+        orderBy: { submittedAt: 'desc' },
+        include: { link: true }
+      })
+    : [];
 
   const payments = rawPayments.map(payment => ({
     ...payment,
@@ -28,12 +40,21 @@ export default async function ResponsesPage() {
           <h1 className="text-2xl font-bold mb-1">Form Responses</h1>
           <p className="text-sm text-gray-400">View detailed responses submitted via payment forms</p>
         </div>
-        <div className="flex items-center gap-3">
-          <DownloadCSVButton payments={payments} />
-          <DownloadPDFButton payments={payments} />
-        </div>
+        {linkId && (
+          <div className="flex items-center gap-3">
+            <DownloadCSVButton payments={payments} />
+            <DownloadPDFButton payments={payments} />
+          </div>
+        )}
       </div>
 
+      <FormSelector links={links} />
+
+      {!linkId ? (
+        <div className="bg-black/20 border border-white/10 rounded-xl p-12 text-center text-gray-400">
+          <p>Please select a form to view its responses.</p>
+        </div>
+      ) : (
       <div className="bg-black/20 border border-white/10 rounded-xl overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-sm">
@@ -112,6 +133,7 @@ export default async function ResponsesPage() {
           </table>
         </div>
       </div>
+      )}
     </div>
   );
 }
