@@ -1,6 +1,8 @@
 import { notFound } from 'next/navigation';
 import prisma from '@/lib/prisma';
 import { Download } from 'lucide-react';
+import fs from 'fs/promises';
+import path from 'path';
 
 export const dynamic = 'force-dynamic';
 
@@ -19,6 +21,27 @@ export default async function InvoicePage(props: { params: Promise<{ id: string 
   const formattedDate = new Date(payment.submittedAt).toLocaleDateString('en-US', {
     year: 'numeric', month: 'long', day: 'numeric'
   });
+
+  let base64Image = null;
+  if (payment.screenshotFileId) {
+    if (payment.screenshotFileId.startsWith('http')) {
+      base64Image = payment.screenshotFileId;
+    } else {
+      try {
+        const filePath = path.join(process.cwd(), 'data', 'uploads', payment.screenshotFileId);
+        const fileBuffer = await fs.readFile(filePath);
+        const ext = path.extname(payment.screenshotFileId).toLowerCase();
+        let mimeType = 'image/jpeg';
+        if (ext === '.png') mimeType = 'image/png';
+        else if (ext === '.webp') mimeType = 'image/webp';
+        else if (ext === '.heic') mimeType = 'image/heic';
+        
+        base64Image = `data:${mimeType};base64,${fileBuffer.toString('base64')}`;
+      } catch (err) {
+        console.error('Failed to load image for invoice', err);
+      }
+    }
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col items-center py-12 px-4 text-gray-900">
@@ -107,6 +130,16 @@ export default async function InvoicePage(props: { params: Promise<{ id: string 
             </tr>
           </tfoot>
         </table>
+
+        {/* Payment Proof */}
+        {base64Image && (
+          <div className="mb-10 page-break-inside-avoid" style={{ breakInside: 'avoid' }}>
+            <h3 className="text-lg font-bold border-b border-gray-100 pb-2 mb-4">Payment Proof</h3>
+            <div className="flex justify-center border border-gray-200 p-2 rounded-lg bg-gray-50 max-h-[800px] overflow-hidden">
+              <img src={base64Image} alt="Payment Proof" className="max-w-full object-contain" style={{ maxHeight: '750px' }} />
+            </div>
+          </div>
+        )}
 
         {/* Footer */}
         <div className="border-t border-gray-100 pt-8 text-center text-sm text-gray-400">
