@@ -4,12 +4,14 @@ import Link from 'next/link';
 import DownloadPDFButton from './DownloadPDFButton';
 import DownloadCSVButton from './DownloadCSVButton';
 import FormSelector from '../FormSelector';
+import SearchBar from '../SearchBar';
 
 export const dynamic = 'force-dynamic';
 
-export default async function ResponsesPage(props: { searchParams: Promise<{ linkId?: string }> }) {
+export default async function ResponsesPage(props: { searchParams: Promise<{ linkId?: string; q?: string }> }) {
   const searchParams = await props.searchParams;
   const linkId = searchParams.linkId;
+  const q = searchParams.q;
 
   const links = await prisma.paymentLink.findMany({
     select: { id: true, title: true },
@@ -18,7 +20,17 @@ export default async function ResponsesPage(props: { searchParams: Promise<{ lin
 
   const rawPayments = linkId 
     ? await prisma.payment.findMany({
-        where: { linkId },
+        where: { 
+          linkId,
+          ...(q ? {
+            OR: [
+              { name: { contains: q, mode: 'insensitive' } },
+              { email: { contains: q, mode: 'insensitive' } },
+              { transactionId: { contains: q, mode: 'insensitive' } },
+              { prn: { contains: q, mode: 'insensitive' } },
+            ]
+          } : {})
+        },
         orderBy: { submittedAt: 'desc' },
         include: { link: true }
       })
@@ -35,15 +47,18 @@ export default async function ResponsesPage(props: { searchParams: Promise<{ lin
 
   return (
     <div className="space-y-6 text-[var(--color-aisa-text)]">
-      <div className="mb-8 flex justify-between items-start">
+      <div className="mb-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
           <h1 className="text-2xl font-bold mb-1">Form Responses</h1>
           <p className="text-sm text-gray-400">View detailed responses submitted via payment forms</p>
         </div>
         {linkId && (
-          <div className="flex items-center gap-3">
-            <DownloadCSVButton payments={payments} />
-            <DownloadPDFButton payments={payments} />
+          <div className="flex flex-col sm:flex-row items-center gap-3 w-full md:w-auto">
+            <SearchBar />
+            <div className="flex items-center gap-3">
+              <DownloadCSVButton payments={payments} />
+              <DownloadPDFButton payments={payments} />
+            </div>
           </div>
         )}
       </div>

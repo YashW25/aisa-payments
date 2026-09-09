@@ -2,12 +2,14 @@ import prisma from '@/lib/prisma';
 import { ExternalLink, CheckCircle, XCircle } from 'lucide-react';
 import PaymentActions from './PaymentActions';
 import FormSelector from '../FormSelector';
+import SearchBar from '../SearchBar';
 
 export const dynamic = 'force-dynamic';
 
-export default async function AdminPayments(props: { searchParams: Promise<{ linkId?: string }> }) {
+export default async function AdminPayments(props: { searchParams: Promise<{ linkId?: string; q?: string }> }) {
   const searchParams = await props.searchParams;
   const linkId = searchParams.linkId;
+  const q = searchParams.q;
 
   const links = await prisma.paymentLink.findMany({
     select: { id: true, title: true },
@@ -16,7 +18,17 @@ export default async function AdminPayments(props: { searchParams: Promise<{ lin
 
   const payments = linkId 
     ? await prisma.payment.findMany({
-        where: { linkId },
+        where: { 
+          linkId,
+          ...(q ? {
+            OR: [
+              { name: { contains: q, mode: 'insensitive' } },
+              { email: { contains: q, mode: 'insensitive' } },
+              { transactionId: { contains: q, mode: 'insensitive' } },
+              { prn: { contains: q, mode: 'insensitive' } },
+            ]
+          } : {})
+        },
         orderBy: { submittedAt: 'desc' },
         include: { link: true }
       })
@@ -24,9 +36,12 @@ export default async function AdminPayments(props: { searchParams: Promise<{ lin
 
   return (
     <div className="space-y-6 text-[var(--color-aisa-text)]">
-      <div className="mb-8">
-        <h1 className="text-2xl font-bold mb-1">Verify Payments</h1>
-        <p className="text-sm text-gray-400">Review and approve submitted payments</p>
+      <div className="mb-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        <div>
+          <h1 className="text-2xl font-bold mb-1">Verify Payments</h1>
+          <p className="text-sm text-gray-400">Review and approve submitted payments</p>
+        </div>
+        {linkId && <SearchBar />}
       </div>
 
       <FormSelector links={links} />
