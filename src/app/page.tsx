@@ -31,6 +31,12 @@ export default function Home() {
           <a href="#policies" className="text-sm text-gray-400 hover:text-white transition-colors hidden md:block">Policies</a>
           <a href="#security" className="text-sm text-gray-400 hover:text-white transition-colors hidden md:block">Security</a>
           <Link
+            href="/verify"
+            className="text-sm text-gray-300 hover:text-white font-medium transition-colors hidden md:block mr-2"
+          >
+            Verify Payment
+          </Link>
+          <Link
             href="/admin"
             className="px-4 py-2 text-sm font-semibold bg-[#00BFFF]/10 hover:bg-[#00BFFF]/20 border border-[#00BFFF]/30 text-[#00BFFF] rounded-lg transition-all"
           >
@@ -67,10 +73,16 @@ export default function Home() {
         </p>
         <p className="text-sm text-gray-600 mb-10">AISA Official Payment Portal</p>
 
-        <div className="flex flex-col sm:flex-row gap-4">
+        <div className="flex flex-col sm:flex-row flex-wrap justify-center gap-4">
+          <Link
+            href="/verify"
+            className="px-8 py-4 bg-gradient-to-r from-[#00BFFF] to-blue-600 hover:from-sky-400 hover:to-blue-500 text-white font-bold rounded-xl shadow-xl shadow-blue-900/30 transition-all text-lg"
+          >
+            Track Payment
+          </Link>
           <a
             href="#how-it-works"
-            className="px-8 py-4 bg-gradient-to-r from-[#00BFFF] to-blue-600 hover:from-sky-400 hover:to-blue-500 text-white font-bold rounded-xl shadow-xl shadow-blue-900/30 transition-all text-lg"
+            className="px-8 py-4 bg-white/5 hover:bg-white/10 border border-white/10 text-white font-semibold rounded-xl transition-all text-lg"
           >
             How It Works
           </a>
