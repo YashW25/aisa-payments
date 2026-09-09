@@ -89,7 +89,7 @@ export default function DownloadPDFButton({ payments }: { payments: any[] }) {
       didDrawCell: function (data) {
         // Add hyperlink to "View Invoice" text
         if (data.section === 'body' && data.column.index === 4) {
-          const paymentId = data.row.raw[4];
+          const paymentId = (data.row.raw as string[])[4];
           if (paymentId) {
             // Construct the full URL
             const invoiceUrl = `${window.location.origin}/admin/responses/${paymentId}/invoice`;

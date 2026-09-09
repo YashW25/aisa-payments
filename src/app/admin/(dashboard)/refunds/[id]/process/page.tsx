@@ -98,7 +98,7 @@ export default async function ProcessRefundPage({ params }: { params: Promise<{ 
         {refund.status === 'PENDING' ? (
           <ProcessRefundClient 
             refundId={refund.id} 
-            adminId={session!.adminId} 
+            adminId={String(session!.adminId)} 
             studentUpiId={refund.studentUpiId || ''} 
             amount={Number(payment ? payment.amount : refund.standaloneAmount)}
             payeeName={payment ? payment.name : (refund.standaloneName || '')}
